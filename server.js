@@ -13,6 +13,23 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+async function retryWithBackoff(fn, maxRetries = 3) {
+  let lastError;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (i < maxRetries - 1) {
+        const waitMs = (Math.pow(2, i + 1) * 1000) + Math.random() * 1000;
+        console.warn(`Retry ${i + 1}/${maxRetries - 1} after ${waitMs}ms: ${err.message}`);
+        await delay(waitMs);
+      }
+    }
+  }
+  throw lastError;
+}
+
 // ─── Source definitions ────────────────────────────────────────────────────────
 
 const REDDIT_SUBS = [
@@ -35,30 +52,32 @@ const RSS_FEEDS = [
 // ─── Fetchers ──────────────────────────────────────────────────────────────────
 
 async function fetchReddit(sub, label) {
-  const url = `https://www.reddit.com/r/${sub}/new.json?limit=25&raw_json=1`;
-  const res = await fetch(url, {
-    headers: {
-      'User-Agent': 'ios-news-aggregator/1.0',
-      'Accept': 'application/json',
-    },
+  return retryWithBackoff(async () => {
+    const url = `https://www.reddit.com/r/${sub}/new.json?limit=25&raw_json=1`;
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'ios-news-aggregator/1.0',
+        'Accept': 'application/json',
+      },
+    });
+    if (res.status === 403 || res.status === 429) {
+      throw new Error(`Reddit ${sub}: HTTP ${res.status} (rate limited or blocked)`);
+    }
+    if (!res.ok) throw new Error(`Reddit ${sub}: HTTP ${res.status}`);
+    const json = await res.json();
+    return (json.data?.children || []).map(({ data: p }) => ({
+      id: `reddit-${p.id}`,
+      title: p.title,
+      url: p.url.startsWith('/r/') ? `https://www.reddit.com${p.url}` : p.url,
+      commentsUrl: `https://www.reddit.com${p.permalink}`,
+      source: label,
+      sourceType: 'reddit',
+      score: p.score,
+      numComments: p.num_comments,
+      author: p.author,
+      timestamp: p.created_utc * 1000,
+    }));
   });
-  if (res.status === 403 || res.status === 429) {
-    throw new Error(`Reddit ${sub}: HTTP ${res.status} (rate limited or blocked)`);
-  }
-  if (!res.ok) throw new Error(`Reddit ${sub}: HTTP ${res.status}`);
-  const json = await res.json();
-  return (json.data?.children || []).map(({ data: p }) => ({
-    id: `reddit-${p.id}`,
-    title: p.title,
-    url: p.url.startsWith('/r/') ? `https://www.reddit.com${p.url}` : p.url,
-    commentsUrl: `https://www.reddit.com${p.permalink}`,
-    source: label,
-    sourceType: 'reddit',
-    score: p.score,
-    numComments: p.num_comments,
-    author: p.author,
-    timestamp: p.created_utc * 1000,
-  }));
 }
 
 async function fetchRSS(feedUrl, label, type) {
@@ -107,7 +126,7 @@ async function fetchAll() {
   const tasks = [
     ...REDDIT_SUBS.map(({ sub, label }) =>
       fetchReddit(sub, label).catch((e) => { console.error(e.message); return []; })
-        .then(items => delay(1000).then(() => items))
+        .then(items => delay(3000).then(() => items))
     ),
     ...RSS_FEEDS.map(({ url, label, type }) =>
       fetchRSS(url, label, type).catch((e) => { console.error(e.message); return []; })
