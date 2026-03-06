@@ -50,7 +50,7 @@ function renderItems(items) {
   newsList.innerHTML = '';
 
   if (!items || items.length === 0) {
-    newsList.innerHTML = '<li style="padding:20px;color:#828282">No items found.</li>';
+    newsList.innerHTML = '<li class="empty-state">No items found.</li>';
     return;
   }
 

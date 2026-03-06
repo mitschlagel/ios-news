@@ -2,19 +2,20 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --hacker-orange:    #ff6600;
-  --hacker-orange-dk: #e55a00;
-  --bg:               #f6f6ef;
-  --text:             #000;
-  --subtext:          #828282;
-  --border:           #e0ddd4;
-  --item-hover:       #fffae8;
+  --hacker-orange:    #00b388;
+  --hacker-orange-dk: #0c7a6b;
+  --bg:               #f7faf9;
+  --text:             #0f172a;
+  --subtext:          #6b7280;
+  --border:           #d8e1de;
+  --item-hover:       #ecf7f4;
+  --visited:          #7f8898;
 
   /* Source badge colours */
-  --reddit:  #ff4500;
-  --apple:   #555555;
-  --hn:      #ff6600;
-  --blog:    #1a69c2;
+  --reddit:  #0f9d86;
+  --apple:   #0f2a5f;
+  --hn:      #00b388;
+  --blog:    #14b8a6;
 }
 
 html { font-size: 14px; }
@@ -56,12 +57,12 @@ header {
   display: flex;
   align-items: center;
   gap: 6px;
-  border: 2px solid rgba(255,255,255,0.6);
+  border: 2px solid rgba(255,255,255,0.72);
   padding: 2px 7px;
   border-radius: 3px;
   letter-spacing: 0.3px;
 }
-.site-title:hover { text-decoration: none; background: rgba(255,255,255,0.1); }
+.site-title:hover { text-decoration: none; background: rgba(255,255,255,0.16); }
 .logo { font-size: 1.1rem; }
 
 .header-nav {
@@ -136,7 +137,7 @@ main {
   font-size: 0.97rem;
   word-break: break-word;
 }
-.item-title:visited { color: #888; }
+.item-title:visited { color: var(--visited); }
 
 .source-badge {
   display: inline-block;
@@ -167,6 +168,11 @@ main {
 .item-meta a:hover { text-decoration: underline; }
 .item-meta .dot { opacity: 0.4; }
 
+.empty-state {
+  padding: 20px;
+  color: var(--subtext);
+}
+
 /* ── Loading / error states ───────────────────────────────── */
 .loading {
   display: flex;
@@ -188,9 +194,9 @@ main {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .error-msg {
-  background: #fff3f3;
-  border: 1px solid #f5c6c6;
-  color: #b00;
+  background: #eef9f6;
+  border: 1px solid #b8e4d8;
+  color: var(--hacker-orange-dk);
   padding: 12px 16px;
   border-radius: 4px;
   margin-top: 16px;
