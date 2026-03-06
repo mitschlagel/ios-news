@@ -7,6 +7,7 @@ const RSSParser = require('rss-parser');
 const app = express();
 const rss = new RSSParser({ timeout: 10000 });
 const PORT = process.env.PORT || 3000;
+const NEWS_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 // ─── Source definitions ────────────────────────────────────────────────────────
 
@@ -109,10 +110,14 @@ async function fetchAll() {
 
   const results = await Promise.all(tasks);
   const flat = results.flat();
+  const cutoff = Date.now() - NEWS_MAX_AGE_MS;
+
+  // Keep only recent items (last 30 days)
+  const recent = flat.filter((item) => Number.isFinite(item.timestamp) && item.timestamp >= cutoff);
 
   // Deduplicate by URL
   const seen = new Set();
-  const deduped = flat.filter((item) => {
+  const deduped = recent.filter((item) => {
     if (seen.has(item.url)) return false;
     seen.add(item.url);
     return true;
