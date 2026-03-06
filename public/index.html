@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iOS News</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a class="site-title" href="/">
+        <span class="logo">&#xf8ff;</span> iOS News
+      </a>
+      <nav class="header-nav">
+        <a href="/">new</a>
+        <span class="sep">|</span>
+        <a href="#" id="refreshBtn">refresh</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div id="status-bar"></div>
+    <ol id="news-list" class="news-list"></ol>
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      Fetching latest news…
+    </div>
+    <div id="error" class="error-msg" hidden></div>
+  </main>
+
+  <footer>
+    <span>iOS News Aggregator — </span>
+    <span id="footer-sources">
+      r/iOSProgramming · r/swift · r/SwiftUI · r/xcode ·
+      Apple Dev · Swift.org · Hacking with Swift · Swift by Sundell · NSHipster · Donny Wals · iOS Dev Weekly · HN
+    </span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
