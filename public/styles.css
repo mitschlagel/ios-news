@@ -12,10 +12,10 @@
   --visited:          #7f8898;
 
   /* Source badge colours */
-  --reddit:  #0f9d86;
+  --reddit:  #0f8a74;
   --apple:   #0f2a5f;
   --hn:      #00b388;
-  --blog:    #14b8a6;
+  --blog:    #4f46e5;
 }
 
 html { font-size: 14px; }
