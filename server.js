@@ -9,6 +9,10 @@ const rss = new RSSParser({ timeout: 10000 });
 const PORT = process.env.PORT || 3000;
 const NEWS_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // ─── Source definitions ────────────────────────────────────────────────────────
 
 const REDDIT_SUBS = [
@@ -34,11 +38,13 @@ async function fetchReddit(sub, label) {
   const url = `https://www.reddit.com/r/${sub}/new.json?limit=25&raw_json=1`;
   const res = await fetch(url, {
     headers: {
-      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      'Accept': 'application/json, text/plain, */*',
-      'Accept-Language': 'en-US,en;q=0.9',
+      'User-Agent': 'ios-news-aggregator/1.0',
+      'Accept': 'application/json',
     },
   });
+  if (res.status === 403 || res.status === 429) {
+    throw new Error(`Reddit ${sub}: HTTP ${res.status} (rate limited or blocked)`);
+  }
   if (!res.ok) throw new Error(`Reddit ${sub}: HTTP ${res.status}`);
   const json = await res.json();
   return (json.data?.children || []).map(({ data: p }) => ({
@@ -101,6 +107,7 @@ async function fetchAll() {
   const tasks = [
     ...REDDIT_SUBS.map(({ sub, label }) =>
       fetchReddit(sub, label).catch((e) => { console.error(e.message); return []; })
+        .then(items => delay(1000).then(() => items))
     ),
     ...RSS_FEEDS.map(({ url, label, type }) =>
       fetchRSS(url, label, type).catch((e) => { console.error(e.message); return []; })
